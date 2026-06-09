@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini LeetCode | Interactive Coding Platform</title>
+  <!-- Google Fonts: Outfit (UI) & JetBrains Mono (Code) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- AMD Loader for Monaco Editor -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+</head>
+<body>
+
+  <!-- App Wrapper -->
+  <div class="app-container">
+    
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="nav-left" id="nav-logo-btn">
+        <div class="logo-icon">
+          <i data-lucide="code-2"></i>
+        </div>
+        <span class="logo-text">Mini<span class="logo-highlight">Leet</span></span>
+      </div>
+      
+      <nav class="nav-links">
+        <button class="nav-btn active" id="nav-problems-btn">
+          <i data-lucide="layout-grid"></i> Problems
+        </button>
+        <button class="nav-btn" id="nav-creator-btn">
+          <i data-lucide="plus-circle"></i> Create Problem
+        </button>
+        <button class="nav-btn" id="nav-analytics-btn">
+          <i data-lucide="bar-chart-3"></i> Dashboard & Stats
+        </button>
+      </nav>
+      
+      <div class="nav-right">
+        <div class="streak-badge" title="Daily Streak">
+          <i data-lucide="flame" class="streak-icon"></i>
+          <span id="streak-count">0</span> Days
+        </div>
+        <div class="user-profile">
+          <div class="avatar">US</div>
+          <span class="username">Developer</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Panels -->
+    <main class="main-content">
+      
+      <!-- 1. DASHBOARD VIEW (Problems List & Quick Stats) -->
+      <section id="view-dashboard" class="content-view">
+        <div class="dashboard-grid">
+          
+          <!-- Left side: Stats summary card -->
+          <div class="stats-sidebar-card glass-panel">
+            <h3 class="card-title">Progress Overview</h3>
+            <div class="progress-stats-container">
+              <div class="circular-progress-wrapper">
+                <svg class="progress-ring" width="120" height="120">
+                  <circle class="progress-ring-bg" stroke="#1e293b" stroke-width="8" fill="transparent" r="50" cx="60" cy="60"/>
+                  <circle id="global-progress-bar" class="progress-ring-fg" stroke="#6366f1" stroke-width="8" stroke-dasharray="314.16" stroke-dashoffset="314.16" stroke-linecap="round" fill="transparent" r="50" cx="60" cy="60"/>
+                </svg>
+                <div class="progress-text-overlay">
+                  <span class="progress-percentage" id="global-solved-percent">0%</span>
+                  <span class="progress-subtext" id="global-solved-count">0/0 Solved</span>
+                </div>
+              </div>
+              
+              <div class="difficulty-breakdown">
+                <div class="diff-bar-item">
+                  <div class="diff-info">
+                    <span class="diff-label text-easy">Easy</span>
+                    <span class="diff-count" id="easy-count-text">0/0</span>
+                  </div>
+                  <div class="bar-bg"><div class="bar-fill bg-easy" id="easy-progress-bar" style="width: 0%"></div></div>
+                </div>
+                
+                <div class="diff-bar-item">
+                  <div class="diff-info">
+                    <span class="diff-label text-medium">Medium</span>
+                    <span class="diff-count" id="medium-count-text">0/0</span>
+                  </div>
+                  <div class="bar-bg"><div class="bar-fill bg-medium" id="medium-progress-bar" style="width: 0%"></div></div>
+                </div>
+                
+                <div class="diff-bar-item">
+                  <div class="diff-info">
+                    <span class="diff-label text-hard">Hard</span>
+                    <span class="diff-count" id="hard-count-text">0/0</span>
+                  </div>
+                  <div class="bar-bg"><div class="bar-fill bg-hard" id="hard-progress-bar" style="width: 0%"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right side: Problem list and filters -->
+          <div class="problems-main-panel glass-panel">
+            <!-- Filters bar -->
+            <div class="filters-bar">
+              <div class="search-input-wrapper">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="search-problems-input" placeholder="Search problems...">
+              </div>
+              
+              <div class="dropdown-filter-group">
+                <select id="filter-difficulty" class="filter-select">
+                  <option value="">All Difficulties</option>
+                  <option value="Easy">Easy</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Hard">Hard</option>
+                </select>
+                
+                <select id="filter-category" class="filter-select">
+                  <option value="">All Categories</option>
+                  <option value="Arrays">Arrays</option>
+                  <option value="Strings">Strings</option>
+                  <option value="Math">Math</option>
+                </select>
+
+                <select id="filter-status" class="filter-select">
+                  <option value="">All Statuses</option>
+                  <option value="Solved">Solved</option>
+                  <option value="Attempted">Attempted</option>
+                  <option value="Unsolved">Unsolved</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Problems Table -->
+            <div class="table-container">
+              <table class="problems-table">
+                <thead>
+                  <tr>
+                    <th width="8%">Status</th>
+                    <th>Problem Title</th>
+                    <th width="15%">Category</th>
+                    <th width="15%">Difficulty</th>
+                    <th width="15%">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="problems-list-body">
+                  <!-- JS inserts problems here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 2. PROBLEM WORKSPACE VIEW (Split Pane: Desc vs Editor) -->
+      <section id="view-workspace" class="content-view hidden">
+        <div class="workspace-layout">
+          
+          <!-- Left Panel: Problem description, submissions -->
+          <div class="workspace-left glass-panel">
+            <div class="workspace-left-tabs">
+              <button class="w-tab active" id="w-tab-description">
+                <i data-lucide="book-open"></i> Description
+              </button>
+              <button class="w-tab" id="w-tab-submissions">
+                <i data-lucide="history"></i> Submissions (<span id="submissions-count">0</span>)
+              </button>
+            </div>
+            
+            <div class="workspace-left-content">
+              <!-- Tab Content: Description -->
+              <div id="w-content-description" class="tab-pane active">
+                <div class="problem-header">
+                  <h2 id="prob-title">Problem Title</h2>
+                  <div class="header-badges">
+                    <span id="prob-difficulty" class="difficulty-badge easy">Easy</span>
+                    <span id="prob-category" class="category-badge">Arrays</span>
+                  </div>
+                </div>
+                
+                <div class="problem-body-content" id="prob-description">
+                  <!-- Problem description HTML -->
+                </div>
+                
+                <div class="problem-examples" id="prob-examples">
+                  <!-- Examples section -->
+                </div>
+                
+                <div class="problem-constraints-section">
+                  <h3>Constraints:</h3>
+                  <ul id="prob-constraints">
+                    <!-- Constraints list -->
+                  </ul>
+                </div>
+              </div>
+              
+              <!-- Tab Content: Submissions -->
+              <div id="w-content-submissions" class="tab-pane hidden">
+                <div class="submissions-list" id="submissions-list-container">
+                  <!-- User's submissions for this problem -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Panel: Code Editor + Console -->
+          <div class="workspace-right">
+            
+            <!-- Code Editor Frame -->
+            <div class="editor-frame glass-panel">
+              <div class="editor-header">
+                <div class="editor-actions-left">
+                  <i data-lucide="terminal" class="terminal-icon"></i>
+                  <span class="editor-title">Editor</span>
+                  <select id="editor-lang-select" class="lang-select">
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python 3 (Pyodide)</option>
+                  </select>
+                  <span id="pyodide-status" class="pyodide-status-badge hidden">
+                    <span class="spinner-small"></span> Loading Python Engine...
+                  </span>
+                </div>
+                <div class="editor-actions-right">
+                  <button class="btn btn-secondary icon-btn" id="btn-reset-code" title="Reset Code to Starter Template">
+                    <i data-lucide="rotate-ccw"></i> Reset Code
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Monaco Editor Container -->
+              <div id="editor-container" class="monaco-editor-container">
+                <div class="editor-loading-placeholder">
+                  <div class="spinner"></div>
+                  <p>Loading Code Editor...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Console panel (Test Cases & Results) -->
+            <div class="console-frame glass-panel collapsed" id="console-pane">
+              <div class="console-header" id="console-header-drag">
+                <div class="console-title">
+                  <i data-lucide="terminal"></i> Console
+                </div>
+                <div class="console-tabs">
+                  <button class="c-tab active" id="c-tab-testcases">Testcase</button>
+                  <button class="c-tab" id="c-tab-results">Result</button>
+                </div>
+                <div class="console-actions">
+                  <button class="icon-btn" id="btn-toggle-console" title="Expand/Collapse Console">
+                    <i data-lucide="chevron-up" id="console-arrow-icon"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="console-body">
+                <!-- Testcases Input tab -->
+                <div id="c-content-testcases" class="console-tab-pane active">
+                  <div class="testcases-container" id="testcases-inputs-wrapper">
+                    <!-- Dynamic fields for inputs based on problem parameters -->
+                  </div>
+                </div>
+
+                <!-- Results Output tab -->
+                <div id="c-content-results" class="console-tab-pane hidden">
+                  <div id="results-empty-state" class="results-empty">
+                    <i data-lucide="play" class="large-icon"></i>
+                    <p>Run your code to see the results here.</p>
+                  </div>
+                  
+                  <div id="results-running-state" class="results-loading hidden">
+                    <div class="spinner-large"></div>
+                    <p id="run-status-text">Running test cases...</p>
+                  </div>
+
+                  <div id="results-error-state" class="results-error-box hidden">
+                    <h4 class="text-hard"><i data-lucide="alert-triangle"></i> Execution Error</h4>
+                    <pre id="results-error-details"></pre>
+                  </div>
+
+                  <div id="results-success-state" class="results-details-wrapper hidden">
+                    <div class="testcase-selector-bar" id="result-case-tabs">
+                      <!-- Case 1, Case 2 tabs -->
+                    </div>
+                    <div class="case-detail-card" id="case-result-details">
+                      <!-- Individual case output data (expected, actual, stdout) -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Editor Submit / Run Footer -->
+              <div class="console-footer">
+                <button class="btn btn-secondary" id="btn-run-code">
+                  <i data-lucide="play"></i> Run Code
+                </button>
+                <button class="btn btn-primary" id="btn-submit-code">
+                  <i data-lucide="upload"></i> Submit
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. CREATOR VIEW (Form to add new problems) -->
+      <section id="view-creator" class="content-view hidden">
+        <div class="creator-container glass-panel">
+          <h2 class="view-title"><i data-lucide="plus-circle"></i> Create Custom Coding Problem</h2>
+          <p class="view-subtitle">Define your own question, starter templates, and test cases. They will be stored locally in your browser.</p>
+          
+          <form id="problem-creator-form" class="creator-form">
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="c-title">Problem Title *</label>
+                <input type="text" id="c-title" placeholder="e.g. Fizz Buzz" required>
+              </div>
+              <div class="form-group flex-1">
+                <label for="c-difficulty">Difficulty *</label>
+                <select id="c-difficulty" required>
+                  <option value="Easy">Easy</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Hard">Hard</option>
+                </select>
+              </div>
+              <div class="form-group flex-1">
+                <label for="c-category">Category *</label>
+                <select id="c-category" required>
+                  <option value="Arrays">Arrays</option>
+                  <option value="Strings">Strings</option>
+                  <option value="Math">Math</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="c-description">Problem Description * (HTML allowed for styling)</label>
+              <textarea id="c-description" rows="5" placeholder="Write a function that returns..." required></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="c-functionName">Function Name * (Must be camelCase)</label>
+                <input type="text" id="c-functionName" placeholder="e.g. fizzBuzz" required pattern="^[a-zA-Z][a-zA-Z0-9]*$">
+              </div>
+              <div class="form-group">
+                <label for="c-paramNames">Parameters * (Comma separated list)</label>
+                <input type="text" id="c-paramNames" placeholder="e.g. n, target" required>
+              </div>
+            </div>
+
+            <div class="form-row flex-row">
+              <div class="form-group">
+                <label for="c-jsTemplate">JavaScript Starter Code *</label>
+                <textarea id="c-jsTemplate" rows="4" placeholder="function fizzBuzz(n) {&#10;    &#10;}" required></textarea>
+              </div>
+              <div class="form-group">
+                <label for="c-pyTemplate">Python Starter Code *</label>
+                <textarea id="c-pyTemplate" rows="4" placeholder="def fizzBuzz(n):&#10;    pass" required></textarea>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3>Test Cases (JSON format)</h3>
+              <p class="form-tip">Provide values in valid JSON. For arrays use <code>[1,2,3]</code>, for strings use double quotes <code>"hello"</code>, for numbers use <code>15</code>.</p>
+              
+              <div class="test-cases-inputs">
+                <div class="test-case-row-header">
+                  <div class="tc-col">Arguments List (JSON Array) *</div>
+                  <div class="tc-col">Expected Output (JSON) *</div>
+                </div>
+                
+                <div class="test-case-row">
+                  <div class="tc-col">
+                    <input type="text" class="c-tc-input" placeholder="e.g. [15]" required>
+                  </div>
+                  <div class="tc-col">
+                    <input type="text" class="c-tc-expected" placeholder="e.g. [&quot;1&quot;,&quot;2&quot;,&quot;Fizz&quot;]" required>
+                  </div>
+                </div>
+
+                <div class="test-case-row">
+                  <div class="tc-col">
+                    <input type="text" class="c-tc-input" placeholder="e.g. [3]" required>
+                  </div>
+                  <div class="tc-col">
+                    <input type="text" class="c-tc-expected" placeholder="e.g. [&quot;1&quot;,&quot;2&quot;,&quot;Fizz&quot;]" required>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-actions-left">
+                <span class="warning-text">* Dynamic code validator runs all inputs to ensure functions return values.</span>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="btn-cancel-creator">Cancel</button>
+              <button type="submit" class="btn btn-primary">Create Problem</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- 4. ANALYTICS / STATS VIEW -->
+      <section id="view-analytics" class="content-view hidden">
+        <div class="analytics-layout">
+          <div class="analytics-row-top">
+            <div class="glass-panel flex-1 analytics-card">
+              <h3>Performance Metrics</h3>
+              <div class="metrics-grid">
+                <div class="metric-item">
+                  <span class="metric-val" id="an-total-solved">0</span>
+                  <span class="metric-lbl">Total Solved</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-val text-easy" id="an-easy-solved">0</span>
+                  <span class="metric-lbl">Easy Solved</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-val text-medium" id="an-med-solved">0</span>
+                  <span class="metric-lbl">Medium Solved</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-val text-hard" id="an-hard-solved">0</span>
+                  <span class="metric-lbl">Hard Solved</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="glass-panel flex-1 analytics-card">
+              <h3>Submission Success Ratio</h3>
+              <div class="ratio-progress-container">
+                <div class="ratio-numbers">
+                  <span id="an-ratio-percentage">0%</span>
+                  <span id="an-ratio-fraction">0/0 Accepted</span>
+                </div>
+                <div class="ratio-bar-bg">
+                  <div id="an-ratio-fill" class="ratio-bar-fill" style="width: 0%"></div>
+                </div>
+                <div class="ratio-legend">
+                  <span><i class="dot dot-accepted"></i> Accepted</span>
+                  <span><i class="dot dot-other"></i> Other</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="glass-panel analytics-card">
+            <h3>Recent Submissions History Logs</h3>
+            <div class="table-container max-height-300">
+              <table class="problems-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Problem Name</th>
+                    <th>Language</th>
+                    <th>Execution Status</th>
+                    <th>Runtime</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="analytics-submissions-list">
+                  <!-- Dynamic content -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+    
+    <!-- Success Celebration Modal -->
+    <div id="success-modal" class="modal-overlay hidden">
+      <div class="modal-content glass-panel glow-green">
+        <div class="modal-header-decor">
+          <i data-lucide="party-popper" class="success-pop-icon"></i>
+        </div>
+        <h2>Accepted!</h2>
+        <p>All test cases passed successfully. Excellent solution!</p>
+        
+        <div class="solution-stats">
+          <div class="sol-stat-item">
+            <span class="sol-stat-val" id="modal-runtime">0.00 ms</span>
+            <span class="sol-stat-lbl">Runtime</span>
+          </div>
+          <div class="sol-stat-item">
+            <span class="sol-stat-val text-easy">100%</span>
+            <span class="sol-stat-lbl">Pass Rate</span>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button class="btn btn-primary" id="btn-modal-close">Back to Dashboard</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Lucide Icons Library via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- App JS Scripts -->
+  <script src="data/problems.js"></script>
+  <script src="js/runner.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

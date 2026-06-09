@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Defense: Mini LeetCode Platform</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    /* Styling variables */
+    :root {
+      --bg-main: #090c14;
+      --bg-gradient: radial-gradient(circle at center, #161e32 0%, #090c14 100%);
+      --panel-bg: rgba(17, 25, 40, 0.65);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.3);
+      --easy: #10b981;
+      --medium: #f59e0b;
+      --hard: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-main);
+      background-image: var(--bg-gradient);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Slides container */
+    .slides-container {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 100vw;
+      height: calc(100vh - 60px);
+    }
+
+    .slide {
+      position: absolute;
+      width: 85%;
+      max-width: 1100px;
+      height: 80%;
+      max-height: 650px;
+      padding: 40px 60px;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.95) translateY(20px);
+      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                  transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateY(0);
+      z-index: 10;
+    }
+
+    /* Slide contents */
+    .slide-header {
+      border-bottom: 2px solid var(--panel-border);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+
+    .slide-header h2 {
+      font-size: 2.2em;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a855f7 0%, var(--primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .slide-header p {
+      color: var(--text-secondary);
+      font-size: 0.95em;
+      margin-top: 4px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .slide-body {
+      flex-grow: 1;
+      font-size: 1.15em;
+      line-height: 1.6;
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Cover slide styling */
+    .slide-cover {
+      align-items: center;
+      text-align: center;
+      justify-content: center;
+    }
+
+    .cover-logo {
+      background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
+      width: 72px;
+      height: 72px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 30px var(--primary-glow);
+    }
+
+    .cover-logo i {
+      width: 40px;
+      height: 40px;
+      color: #fff;
+    }
+
+    .slide-cover h1 {
+      font-size: 3.5em;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      letter-spacing: -1px;
+    }
+
+    .slide-cover h1 span {
+      background: linear-gradient(to right, #8b5cf6, var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .cover-subtitle {
+      font-size: 1.3em;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+      font-weight: 400;
+    }
+
+    .cover-footer {
+      font-size: 0.9em;
+      color: var(--text-muted);
+      border-top: 1px solid var(--panel-border);
+      padding-top: 20px;
+      width: 60%;
+      display: flex;
+      justify-content: space-around;
+    }
+
+    /* Content layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .bullet-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      list-style: none;
+    }
+
+    .bullet-list li {
+      position: relative;
+      padding-left: 28px;
+    }
+
+    .bullet-list li::before {
+      content: "✦";
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .bullet-list li strong {
+      color: var(--text-primary);
+    }
+
+    .feature-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .feature-card i {
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    .feature-card h4 {
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .feature-card p {
+      font-size: 0.9em;
+      color: var(--text-secondary);
+    }
+
+    .code-box {
+      font-family: 'JetBrains Mono', monospace;
+      background: #06080e;
+      border: 1px solid var(--panel-border);
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 0.85em;
+      color: #38bdf8;
+      overflow-x: auto;
+    }
+
+    /* Controls bar at bottom */
+    .controls-bar {
+      height: 60px;
+      background: rgba(9, 12, 20, 0.9);
+      border-top: 1px solid var(--panel-border);
+      padding: 0 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .progress-bar-container {
+      width: 40%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--primary), #a855f7);
+      width: 10%;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .slide-counter {
+      font-size: 0.9em;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .navigation-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--panel-border);
+      color: var(--text-primary);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9em;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    /* Print styling to export to PDF */
+    @page {
+      size: landscape;
+      margin: 0;
+    }
+    @media print {
+      body {
+        background: #ffffff;
+        color: #000000;
+        height: auto;
+        overflow: visible;
+      }
+      .slides-container {
+        display: block;
+        height: auto;
+      }
+      .slide {
+        position: relative;
+        page-break-after: always;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        transform: none !important;
+        width: 100% !important;
+        height: 100vh !important;
+        max-width: none !important;
+        max-height: none !important;
+        padding: 40px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        border: none !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+      }
+      .slide-header h2 {
+        background: none !important;
+        -webkit-text-fill-color: initial !important;
+        color: #4f46e5 !important;
+      }
+      .slide-body {
+        color: #334155 !important;
+      }
+      .feature-card {
+        border-color: #cbd5e1 !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+      }
+      .feature-card h4, .feature-card p {
+        color: #0f172a !important;
+      }
+      .code-box {
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
+        border-color: #cbd5e1 !important;
+      }
+      .controls-bar {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="slides-container">
+    
+    <!-- SLIDE 1: Cover Page -->
+    <section class="slide active slide-cover glass-panel">
+      <div class="cover-logo">
+        <i data-lucide="code-2"></i>
+      </div>
+      <h1>Mini<span>Leet</span> Coding Platform</h1>
+      <p class="cover-subtitle">A Server-Less, Client-Side Algorithm judge Environment</p>
+      <div class="cover-footer">
+        <span><strong>Subject:</strong> Software Technology</span>
+        <span><strong>Version:</strong> 1.0.0</span>
+        <span><strong>Author:</strong> Developer</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: Introduction & Motivation -->
+    <section class="slide glass-panel">
+      <div class="slide-header">
+        <h2>Introduction & Problem Statement</h2>
+        <p>Project Background</p>
+      </div>
+      <div class="slide-body grid-2">
+        <ul class="bullet-list">
+          <li><strong>The Challenge</strong>: Traditional coding platforms (LeetCode, HackerRank) require expensive remote compiler servers, complex Docker sandboxes, and stable high-speed APIs.</li>
+          <li><strong>Educational Need</strong>: CS students require a lightweight, zero-latency, local-first playground to instantly verify code correctness.</li>
+          <li><strong>The Solution</strong>: <strong>Mini LeetCode</strong> executes, logs, and asserts code completely in the user's browser, providing a zero-cost, portable evaluation environment.</li>
+        </ul>
+        <div>
+          <div class="feature-card">
+            <i data-lucide="zap"></i>
+            <div>
+              <h4>Zero Latency</h4>
+              <p>Compiler runs locally in the browser, providing instant evaluation feedback.</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <i data-lucide="server-off"></i>
+            <div>
+              <h4>Serverless Architecture</h4>
+              <p>Reduces setup complexity and hosting costs to zero.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: System Architecture -->
+    <section class="slide glass-panel">
+      <div class="slide-header">
+        <h2>System Architecture</h2>
+        <p>High-Level Design</p>
+      </div>
+      <div class="slide-body grid-2">
+        <div>
+          <ul class="bullet-list" style="gap:12px;">
+            <li><strong>Single Page Interface (SPA)</strong>: Vanilla HTML5 and CSS3 views toggled directly in the DOM. No React/Vite overhead, allowing raw local file execution.</li>
+            <li><strong>Monaco Editor</strong>: Integrated via require.js AMD loader, providing professional autocompletes, themes, and code diagnostics.</li>
+            <li><strong>CodeRunner Abstraction</strong>: Coordinates user configurations, test suites inputs, and execution parameters, and routes them to isolated threads.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="feature-card" style="margin-bottom:8px;">
+            <i data-lucide="cpu"></i>
+            <div>
+              <h4>HTML5 Web Workers</h4>
+              <p>Runs execution processes in background threads, isolating the main UI from freezing.</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <i data-lucide="box"></i>
+            <div>
+              <h4>Local State Persistence</h4>
+              <p>Synchronizes drafts, user streaking status, submissions logs, and custom problems inside localStorage.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: Sandboxed Code Execution -->
+    <section class="slide glass-panel">
+      <div class="slide-header">
+        <h2>In-Browser Compilation Sandbox</h2>
+        <p>JavaScript Worker Engine</p>
+      </div>
+      <div class="slide-body grid-2">
+        <ul class="bullet-list">
+          <li><strong>Security Sandbox</strong>: Code executes in a separate thread. Workers are prohibited from accessing the page DOM or cookie values.</li>
+          <li><strong>Infinite Loop Protection</strong>: Main thread implements a watchdog timer. Submissions are terminated if execution exceeds 3 seconds.</li>
+          <li><strong>Console Capture</strong>: Intercepts `console.log()` to capture printing streams directly in the output panel.</li>
+        </ul>
+        <pre class="code-box"><code>// Inline Web Worker instantiation
+const blob = new Blob([jsWorkerCode], 
+  { type: 'application/javascript' }
+);
+const worker = new Worker(
+  URL.createObjectURL(blob)
+);
+worker.postMessage({ code, args });</code></pre>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: WebAssembly Python Integration -->
+    <section class="slide glass-panel">
+      <div class="slide-header">
+        <h2>WebAssembly Python Engine</h2>
+        <p>Pyodide Web Worker Integration</p>
+      </div>
+      <div class="slide-body grid-2">
+        <div>
+          <ul class="bullet-list" style="gap:12px;">
+            <li><strong>WASM Execution</strong>: Loads **Pyodide** (CPython compiled to WebAssembly) asynchronously via CDN inside a persistent worker.</li>
+            <li><strong>Parameter Serialization</strong>: Encodes JS arrays/strings/booleans into JSON, parses them in Python using `json.loads()`, and converts results back to JSON.</li>
+            <li><strong>Performance Optimization</strong>: Reuses the Pyodide worker across code runs to prevent loading latencies, but kills and recreates the worker if a timeout (8 seconds) triggers.</li>
+          </ul>
+        </div>
+        <pre class="code-box" style="font-size:0.8em; color:#a5b4fc;"><code>import json
+# Executing wrapper in Pyodide
+try:
+    result = userFunc(json.loads(args))
+    serialized = json.dumps(result)
+except Exception as e:
+    py_error = traceback.format_exc()</code></pre>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: UI/UX & Styling Aesthetics -->
+    <section class="slide glass-panel">
+      <div class="slide-header">
+        <h2>UI/UX Design & Styling Aesthetics</h2>
+        <p>Visual Design System</p>
+      </div>
+      <div class="slide-body grid-2">
+        <ul class="bullet-list">
+          <li><strong>Glassmorphic Cards</strong>: Panels styled with semi-transparent dark backgrounds, blurred backdrops, and fine borders.</li>
+          <li><strong>Responsive Views</strong>: Fluid grid columns that automatically adapt the code editor and description split panes to standard displays.</li>
+          <li><strong>Micro-Animations</strong>: Glowing borders on correct submissions, pulse states on streak flames, and active scaling transitions.</li>
+        </ul>
+        <div>
+          <div class="feature-card">
+            <i data-lucide="palette"></i>
+            <div>
+              <h4>harmonious Color Theme</h4>
+              <p>Slate text colors against a dark space background highlight glowing difficulties and validation results.</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <i data-lucide="sparkles"></i>
+            <div>
+              <h4>Confetti Celebrations</h4>
+              <p>Visual animations and statistics modals pop up when all test assertions successfully pass.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: Custom Problem Creator -->
+    <section class="slide glass-panel">
+      <div class="slide-header">
+        <h2>Dynamic Problem Creator Form</h2>
+        <p>Expanding the platform</p>
+      </div>
+      <div class="slide-body grid-2">
+        <div>
+          <ul class="bullet-list">
+            <li><strong>Full Creator Panel</strong>: Input title, difficulty, category, descriptions (HTML formatted), parameter arrays, and default starters.</li>
+            <li><strong>JSON Parser</strong>: Automatically parses arguments lists and return definitions, validating code entries prior to insertion.</li>
+            <li><strong>Local Syncing</strong>: Appends custom challenges into the master problems set. They load, compile, run, and calculate metrics in local storage.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="feature-card" style="margin-bottom:8px;">
+            <i data-lucide="plus-circle"></i>
+            <div>
+              <h4>Simple Integration</h4>
+              <p>Custom challenges merge into the dashboard directory automatically.</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <i data-lucide="database"></i>
+            <div>
+              <h4>Persistence</h4>
+              <p>Data is stored locally under `mini_leetcode_custom_problems` and persists on reloads.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 8: Statistics & User Analytics -->
+    <section class="slide glass-panel">
+      <div class="slide-header">
+        <h2>User Analytics & Streaking Dashboard</h2>
+        <p>Engagement Metrics</p>
+      </div>
+      <div class="slide-body grid-2">
+        <ul class="bullet-list">
+          <li><strong>Active Streak Counter</strong>: Tracks consecutive day logins using a calendar-day difference checker in local storage.</li>
+          <li><strong>SVG Circular Progress Meter</strong>: Dynamically calculates and visualizes completion metrics.</li>
+          <li><strong>Detailed Submission History Logs</strong>: Lists dates, execution states, runtimes, and languages. Highlights a **"Restore Code"** button to load past drafts back into Monaco.</li>
+        </ul>
+        <div>
+          <div class="feature-card">
+            <i data-lucide="history"></i>
+            <div>
+              <h4>Submissions Tracking</h4>
+              <p>Maintains history logs for each solved challenge to track optimization progress.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 9: Project Verification & Testing -->
+    <section class="slide glass-panel">
+      <div class="slide-header">
+        <h2>Project Verification & Testing</h2>
+        <p>Validation Scenarios</p>
+      </div>
+      <div class="slide-body">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--panel-border); color: var(--text-secondary);">
+              <th style="padding: 10px;">Test Category</th>
+              <th style="padding: 10px;">Test Input</th>
+              <th style="padding: 10px;">Expected Behavior</th>
+              <th style="padding: 10px;">Actual Behavior</th>
+              <th style="padding: 10px; color: var(--easy);">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 10px;">**JS Infinite Loop**</td>
+              <td style="padding: 10px;">`while(true) {}`</td>
+              <td style="padding: 10px;">Aborts in 3000ms</td>
+              <td style="padding: 10px;">"Time Limit Exceeded" printed</td>
+              <td style="padding: 10px; color: var(--easy);">Pass</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 10px;">**Python print**</td>
+              <td style="padding: 10px;">`print("Output test")`</td>
+              <td style="padding: 10px;">Captured in stdout console</td>
+              <td style="padding: 10px;">Prints in console tab</td>
+              <td style="padding: 10px; color: var(--easy);">Pass</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 10px;">**Successful Solver**</td>
+              <td style="padding: 10px;">Valid twoSum code</td>
+              <td style="padding: 10px;">Confetti animation launches</td>
+              <td style="padding: 10px;">Confetti shows, Modal details display</td>
+              <td style="padding: 10px; color: var(--easy);">Pass</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px;">**Custom Problems**</td>
+              <td style="padding: 10px;">Form inputs for "Fizz Buzz"</td>
+              <td style="padding: 10px;">Problem added to list</td>
+              <td style="padding: 10px;">Shows on dashboard and is solvable</td>
+              <td style="padding: 10px; color: var(--easy);">Pass</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SLIDE 10: Conclusion & Demo -->
+    <section class="slide glass-panel">
+      <div class="slide-header">
+        <h2>Conclusion</h2>
+        <p>Project Summary</p>
+      </div>
+      <div class="slide-body grid-2">
+        <ul class="bullet-list">
+          <li><strong>Offline-First Coding</strong>: A highly responsive development sandbox that operates entirely in the browser.</li>
+          <li><strong>Robust Security & Timing</strong>: Complete client-side isolation using Web Workers and watchdog timers to prevent infinite loop tab freezing.</li>
+          <li><strong>Highly Portable</strong>: Packaged as a single ZIP file containing the code, IEEE SRS PDF document, and interactive presentation.</li>
+        </ul>
+        <div style="text-align: center; border: 1px dashed var(--primary); padding: 24px; border-radius: 8px;">
+          <h4 style="margin-bottom:8px; color:var(--text-primary);">Interactive Presentation Demo</h4>
+          <p style="font-size:0.9em; color:var(--text-secondary); margin-bottom:16px;">Present directly in the browser by clicking the controls below or using your arrow keys.</p>
+          <button class="btn nav-btn" onclick="alert('Open localhost:8000/ to see the live Mini LeetCode application in action!')">
+            <i data-lucide="play"></i> Live App Demo
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Bottom Controls -->
+  <footer class="controls-bar">
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" id="slides-progress"></div>
+    </div>
+    <div class="slide-counter" id="slides-counter-text">
+      Slide 1 of 10
+    </div>
+    <div class="navigation-buttons">
+      <button class="nav-btn" id="btn-prev-slide">
+        <i data-lucide="chevron-left"></i> Previous
+      </button>
+      <button class="nav-btn" id="btn-next-slide">
+        Next <i data-lucide="chevron-right"></i>
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    // Lucide Icons
+    if (window.lucide) window.lucide.createIcons();
+
+    // Slideshow control state
+    const slides = document.querySelectorAll('.slide');
+    let currentSlideIndex = 0;
+
+    function showSlide(index) {
+      if (index < 0 || index >= slides.length) return;
+      
+      // Remove active from all slides
+      slides.forEach(slide => slide.classList.remove('active'));
+      
+      // Set target active
+      slides[index].classList.add('active');
+      currentSlideIndex = index;
+
+      // Update progress bar
+      const progressPercent = ((currentSlideIndex + 1) / slides.length) * 100;
+      document.getElementById('slides-progress').style.width = progressPercent + '%';
+
+      // Update text counter
+      document.getElementById('slides-counter-text').textContent = `Slide ${currentSlideIndex + 1} of ${slides.length}`;
+    }
+
+    // Nav actions
+    document.getElementById('btn-prev-slide').addEventListener('click', () => {
+      if (currentSlideIndex > 0) showSlide(currentSlideIndex - 1);
+    });
+
+    document.getElementById('btn-next-slide').addEventListener('click', () => {
+      if (currentSlideIndex < slides.length - 1) showSlide(currentSlideIndex + 1);
+    });
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'Spacebar' || e.key === ' ') {
+        e.preventDefault();
+        if (currentSlideIndex < slides.length - 1) showSlide(currentSlideIndex + 1);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (currentSlideIndex > 0) showSlide(currentSlideIndex - 1);
+      }
+    });
+  </script>
+</body>
+</html>
